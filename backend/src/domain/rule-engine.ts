@@ -20,22 +20,12 @@ function metricsMatch(ruleMetric: string, inputMetric: string): boolean {
   return normalizeMetric(ruleMetric) === normalizeMetric(inputMetric);
 }
 
-function assertNever(value: never): never {
-  throw new Error(`Unexpected value: ${String(value)}`);
-}
-
 function evaluateOperator(
   operator: RuleOperator,
   inputValue: number,
   threshold: number
 ): boolean {
-  const comparator = OPERATOR_MAP[operator];
-
-  if (!comparator) {
-    return assertNever(operator);
-  }
-
-  return comparator(inputValue, threshold);
+  return OPERATOR_MAP[operator](inputValue, threshold);
 }
 
 function formatReason(
@@ -61,8 +51,10 @@ function formatReason(
     case 'NOT_TRIGGERED':
       return `${ruleMetric} ${inputValue} is not ${operator} ${threshold} — rule not triggered`;
 
-    default:
-      return assertNever(code);
+    default: {
+      const exhaustive: never = code;
+      throw new Error(`Unexpected SimulateResultCode: ${String(exhaustive)}`);
+    }
   }
 }
 
