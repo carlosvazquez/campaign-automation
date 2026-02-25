@@ -2,32 +2,46 @@
 
 /**
  * Comparison operators supported by the rule engine.
- * Used to compare a live metric value against a threshold defined in a Rule.
  */
-export type Operator = '<' | '>' | '=' | '>=' | '<=';
-
-/**
- * Actions the system can take when a rule condition is triggered.
- * - pause:    Stop the campaign immediately.
- * - scale_up: Increase budget or bids for the campaign.
- * - alert:    Notify the operator without changing campaign state.
- */
-export type Action = 'pause' | 'scale_up' | 'alert';
+export type RuleOperator = '<' | '>' | '=' | '>=' | '<=';
 
 /**
  * A performance rule that encodes: IF metric operator value THEN action.
- * Rules are evaluated by the rule engine against live metric inputs.
+ * Evaluated by the rule engine against live metric inputs.
  */
-export type Rule = {
-  /** The metric name to watch, e.g. 'ROAS', 'CPC', 'CTR', 'CPA'. */
+export interface Rule {
   metric: string;
-  /** The comparison operator applied between the live value and the threshold. */
-  operator: Operator;
-  /** The threshold value the live metric is compared against. */
+  operator: RuleOperator;
   value: number;
-  /** The action to execute when the condition evaluates to true. */
-  action: Action;
-};
+  action: string;
+}
+
+/**
+ * Input payload for the simulate endpoint.
+ * Represents a single live metric reading to evaluate against a campaign rule.
+ */
+export interface SimulateInput {
+  metric: string;
+  value: number;
+}
+
+/**
+ * Machine-readable outcome code returned by the rule engine.
+ */
+export type SimulateResultCode =
+  | 'TRIGGERED'
+  | 'NOT_TRIGGERED'
+  | 'METRIC_MISMATCH';
+
+/**
+ * Result returned by the rule engine after evaluating a rule against an input.
+ */
+export interface SimulateResult {
+  triggered: boolean;
+  action: string | null;
+  code: SimulateResultCode;
+  reason: string;
+}
 
 /**
  * A single condition that filters a campaign's target audience.
@@ -63,29 +77,6 @@ export type Campaign = {
   rule: Rule;
   /** Timestamp when the campaign was first persisted. */
   createdAt: Date;
-};
-
-/**
- * Input payload for the simulate endpoint.
- * Represents a single live metric reading to evaluate against a campaign rule.
- */
-export type SimulateInput = {
-  /** The name of the metric being reported, e.g. 'ROAS', 'CPC'. */
-  metric: string;
-  /** The live numeric value of the metric. */
-  value: number;
-};
-
-/**
- * Result returned by the rule engine after evaluating a rule against an input.
- */
-export type SimulateResult = {
-  /** Whether the rule condition evaluated to true. */
-  triggered: boolean;
-  /** The action to execute, or null when the rule was not triggered. */
-  action: Action | null;
-  /** Human-readable explanation of the evaluation outcome. */
-  reason: string;
 };
 
 /**

@@ -2,7 +2,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { evaluateRule } from '../../domain/rule-engine';
-import { type Rule, type SimulateInput, type SimulateResult } from '../../domain/types';
+import type { Rule, SimulateInput, SimulateResult } from '../../domain/types';
 
 const baseRule = (overrides: Partial<Rule> = {}): Rule => ({
   metric: 'ROAS',
@@ -28,6 +28,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: true,
         action: 'pause',
+        code: 'TRIGGERED',
         reason: 'ROAS 2 < 3 — rule triggered, action: pause',
       });
     });
@@ -40,6 +41,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: false,
         action: null,
+        code: 'NOT_TRIGGERED',
         reason: 'ROAS 3 is not < 3 — rule not triggered',
       });
     });
@@ -52,6 +54,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: false,
         action: null,
+        code: 'NOT_TRIGGERED',
         reason: 'ROAS 5 is not < 3 — rule not triggered',
       });
     });
@@ -66,6 +69,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: true,
         action: 'alert',
+        code: 'TRIGGERED',
         reason: 'CPC 5 > 3 — rule triggered, action: alert',
       });
     });
@@ -78,6 +82,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: false,
         action: null,
+        code: 'NOT_TRIGGERED',
         reason: 'CPC 3 is not > 3 — rule not triggered',
       });
     });
@@ -92,6 +97,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: true,
         action: 'scale_up',
+        code: 'TRIGGERED',
         reason: 'CTR 0.05 = 0.05 — rule triggered, action: scale_up',
       });
     });
@@ -104,6 +110,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: false,
         action: null,
+        code: 'NOT_TRIGGERED',
         reason: 'CTR 0.04 is not = 0.05 — rule not triggered',
       });
     });
@@ -118,6 +125,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: true,
         action: 'alert',
+        code: 'TRIGGERED',
         reason: 'CPA 10 >= 10 — rule triggered, action: alert',
       });
     });
@@ -130,6 +138,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: true,
         action: 'alert',
+        code: 'TRIGGERED',
         reason: 'CPA 15 >= 10 — rule triggered, action: alert',
       });
     });
@@ -144,6 +153,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: true,
         action: 'pause',
+        code: 'TRIGGERED',
         reason: 'ROAS 3 <= 3 — rule triggered, action: pause',
       });
     });
@@ -166,6 +176,7 @@ describe('evaluateRule', () => {
       expect(result).toEqual({
         triggered: false,
         action: null,
+        code: 'METRIC_MISMATCH',
         reason: "Metric mismatch: rule watches 'ROAS', got 'CPC'",
       });
     });
@@ -199,6 +210,30 @@ describe('evaluateRule', () => {
       );
       expect(triggered.reason.length).toBeGreaterThan(0);
       expect(notTriggered.reason.length).toBeGreaterThan(0);
+    });
+
+    it('should return code: TRIGGERED when rule fires', () => {
+      const result: SimulateResult = evaluateRule(
+        baseRule({ operator: '<', value: 3 }),
+        baseInput({ value: 1 }),
+      );
+      expect(result.code).toBe('TRIGGERED');
+    });
+
+    it('should return code: NOT_TRIGGERED when condition is false', () => {
+      const result: SimulateResult = evaluateRule(
+        baseRule({ operator: '<', value: 3 }),
+        baseInput({ value: 5 }),
+      );
+      expect(result.code).toBe('NOT_TRIGGERED');
+    });
+
+    it('should return code: METRIC_MISMATCH when metrics differ', () => {
+      const result: SimulateResult = evaluateRule(
+        baseRule({ metric: 'ROAS' }),
+        baseInput({ metric: 'CPA' }),
+      );
+      expect(result.code).toBe('METRIC_MISMATCH');
     });
   });
 });

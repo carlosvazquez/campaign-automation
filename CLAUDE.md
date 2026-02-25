@@ -33,6 +33,11 @@
 - Do not implement logic ahead of its phase
 - Run tests before declaring a phase complete
 
+## Domain Types Location
+All shared domain types (Rule, SimulateInput, SimulateResult, SimulateResultCode)
+must be defined in src/domain/types.ts and imported from there.
+rule-engine.ts must not re-export or redefine these types.
+
 ## Monorepo
 - Backend runs on port 3001
 - Frontend runs on port 3000
