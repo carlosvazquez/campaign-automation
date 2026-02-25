@@ -36,7 +36,7 @@ flowchart TD
   H -->|reads/writes| I
   G -->|SimulateResult| F
   F -->|Campaign / SimulateResult| E
-  E -->|{ data: T }| D
+  E -->|"{ data: T }"| D
   D -->|resolved Promise| C
   C -->|mutation state| B
 ```
