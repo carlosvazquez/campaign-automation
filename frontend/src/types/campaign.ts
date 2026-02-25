@@ -89,6 +89,8 @@ export type CreateCampaignForm = {
   creativities: string[];
   audience:     AudienceCondition[];
   rule:         Rule;
+  /** Live metric value used in the simulate step — editable independently of the rule threshold. */
+  simulateValue: string;
 };
 
 /** Generic API success response envelope. */
