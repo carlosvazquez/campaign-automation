@@ -1,0 +1,20 @@
+{
+  "name": "campaign-automation",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
+    "test": "concurrently \"npm test --workspace=backend\" \"npm test --workspace=frontend\"",
+    "lint": "concurrently \"npm run lint --workspace=backend\" \"npm run lint --workspace=frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "8.2.2"
+  }
+}
